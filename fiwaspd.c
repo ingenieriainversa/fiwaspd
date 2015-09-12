@@ -25,7 +25,7 @@
  *
  * Examples:    ./fiwaspd
  */
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,17 +34,17 @@
 #include <regex.h>
 #include <unistd.h>
 #include <crypt.h>
- 
+
 #define clear() fprintf(stdout,"\033[H\033[J\n")
- 
+
 static const char *title = "Free IBM WebSphere Application Server Password Decoder",*alphaNum64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 static char i64[256];
 const float version = 0.03;
- 
+
 char cabecera(float),login(float),was(void),intentos(int,int),fDecodifica(char *pass);
 int linea(int),fDecodificaPass(char *passEncPassword),fIniciaB64(void),fDecodificaB64(char *mi, unsigned rz, const char *k);
 void siguiente(void),error(void);
- 
+
 int linea(int s) {
 	fprintf(stdout,"+");
 	for (int i = 0; i <= s; i++) {
@@ -53,14 +53,14 @@ int linea(int s) {
 	fprintf(stdout,"+\n");
 	return 0;
 }
- 
+
 char cabecera(float v) {
 	linea(61);
 	fprintf(stdout,"| %s v%.2f |\n",title,v);
 	linea(61);
 	return 0;
 }
- 
+
 char intentos(int intentos, int veces) {
 	if (intentos == veces) {
 		fprintf(stderr,"\n\t\tToo many tries. Exit.\n");
@@ -68,10 +68,10 @@ char intentos(int intentos, int veces) {
 	}
 	return 0;
 }
- 
+
 char login(float v) {
 	clear();
- 
+
 	// User and password encrypted with encrypt.c <https://github.com/ingenieriainversa/Tools/blob/master/encrypt.c>
 	const char *u = "$1$Sz/uJmtK$oNe6f04r3/WB8J0yB8y9T1"; //admin
 	const char *p = "$1$C.0uJgiE$A3j2zTcyi5noAqMmep2Tp1"; //abcd1234
@@ -95,7 +95,7 @@ char login(float v) {
 	intentos(i,veces);
 	return 0;
 }
- 
+
 int fIniciaB64(void) {
 	int i;
 	const char *p;
@@ -108,7 +108,7 @@ int fIniciaB64(void) {
 	i64['='] = 0;
 	return 0;
 }
- 
+
 int fDecodificaB64(char *mi,unsigned rz,const char *k) {
 	unsigned p = 0,val,xo = 0;
 	int i;
@@ -137,7 +137,7 @@ int fDecodificaB64(char *mi,unsigned rz,const char *k) {
 	*mi = '\0';
 	return(0);
 }
- 
+
 int fDecodificaPass(char *passEncPassword) {
 	char *pass,passEnc[1024];
 	pass = strchr(passEncPassword, '}');
@@ -153,14 +153,14 @@ int fDecodificaPass(char *passEncPassword) {
 	fprintf(stdout,"\n\n");
 	return pass - passEnc;
 }
- 
+
 char fDecodifica(char *pass) {
 	while (*pass && (*pass != '\"')) {
 		putc(*pass++ ^ '_',stdout);
 	}
 	return *pass;
 }
- 
+
 void siguiente(void) {
 	int ch;
 	while ((ch = getchar()) != '\n' && ch != EOF) {
@@ -170,13 +170,13 @@ void siguiente(void) {
 		return;
 	}
 }
- 
+
 void error(void) {
 	clear();
 	fprintf(stderr,"\n\tWARNING: Invalid option");
 	siguiente();
 }
- 
+
 char was(void) {
 	const int veces = 3;
 	int i;
@@ -185,7 +185,7 @@ char was(void) {
 	cabecera(version);
 	for (i = 0;i < veces;i++) {
 		fprintf(stdout,"\n Encrypted password:\t");
-		gets(string);
+		fgets(string,2048,stdin);
 		if (strstr(string,"{xor}") == NULL) {
 			fprintf(stderr,"\t\tWrong password format [{xor}XXXXX...]\n");
 			continue;
@@ -193,19 +193,19 @@ char was(void) {
 		break;
 	}
 	intentos(i,veces);
- 
+
 	fflush(stdin);
 	fIniciaB64();
 	fprintf(stdout," Decrypted password:\t");
 	fDecodificaPass(string);
 	return 0;
 }
- 
+
 char uso(char *bin){
 	fprintf(stdout,"\tUsage:\t\t%s [-v|-h]\n",bin);
 	return 0;
 }
- 
+
 int main(int argc,char *argv[]) {
 	opterr = 0;
 	int c,stdOut = '\0';
@@ -232,10 +232,10 @@ int main(int argc,char *argv[]) {
 				abort();
 		}
 	}
- 
+
 	// Autentication [coment this line if you want to disable security]
 	stdOut = login(version);
- 
+
 	if (!stdOut) {
 		was();
 	}
